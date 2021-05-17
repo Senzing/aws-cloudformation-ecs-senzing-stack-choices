@@ -256,18 +256,156 @@ Technical information on AWS Cloudformation parameters can be seen at
 
 ### DatabaseStack
 
+1. **Synopsis:**
+   The stack name of the "Senzing aws-cloudformation-database-cluster" deployment.
+   See [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster).
+1. **Required:** Yes
+1. **Type:** String
+
+### RunApiServer
+
+1. **Synopsis:**
+   Optionally, run the
+   [Senzing API server](https://github.com/Senzing/senzing-api-server)
+   to create a RESTful API service to the Senzing Engine.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunJupyter
+
+1. **Synopsis:**
+   Optionally, run the
+   [Senzing Jupyter notebooks](https://github.com/Senzing/docker-jupyter)
+   to view Jupyter notebooks showing Senzing code samples.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** No
+
+### RunRedoer
+
+1. **Synopsis:**
+   Optionally, run the
+   [redoer](https://github.com/Senzing/redoer)
+   to process "redo records"
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunSshd
+
+1. **Synopsis:**
+   Optionally, run the
+   [sshd](https://github.com/Senzing/docker-sshd)
+   container that allows `ssh` and `scp` access.
+   Can be used for debugging, copying files to the EFS, or the Senzing Exploratory Tools.
+   This is an economical container.
+   To run a "maxed-out" container, see [RunSshdMax](#runsshdmax).
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunSshdMax
+
+1. **Synopsis:**
+   Optionally, run the
+   [sshd](https://github.com/Senzing/docker-sshd)
+   container that allows `ssh` and `scp` access.
+   Can be used for debugging, copying files to the EFS, or the Senzing Exploratory Tools.
+   This differs from [RunSshd](#runsshd) in that it has maximum resource of 30GB Memory, 4 vCPU.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunStreamLoader
+
+1. **Synopsis:**
+   Optionally, run the
+   [stream-loader](https://github.com/Senzing/stream-loader)'
+   which reads records from the SQS queue and sends them to the Senzing Engine.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
 ### RunStreamProducer
 
 1. **Synopsis:**
-   Specify if example data should be loaded into the system during deployment.
-   The data loaded is called the
-   "[Senzing Synthetic Truth Set](https://senzing.zendesk.com/hc/en-us/articles/360047940434-Synthetic-Truth-Sets)".
-   If a system without example data (i.e. a "clean" system) is desired, choose "No".
+   Optionally, run the
+   [stream-producer](https://github.com/Senzing/stream-producer)
+   container that fetches JSON lines from a file and pushes them to the SQS queue.
+   If "Yes" is chosen,
+   [SenzingInputUrl](#senzinginputurl),
+   [SenzingRecordMin](#senzingrecordmin),
+   and
+   [SenzingRecordMax](#senzingrecordmax)
+   need to be specified.
 1. **Required:** Yes
-1. **Type:** Choice
+1. **Type:** Boolean
 1. **Allowed values:**
-    1. Yes
-    1. No
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunSwagger
+
+1. **Synopsis:**
+   Optionally, run the
+   [swaggerapi/swagger-ui](https://github.com/swagger-api/swagger-ui)
+   container that hosts the SwaggerUI for viewing the
+   [Senzing REST API OpenAPI document](https://github.com/Senzing/senzing-rest-api-specification).
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** Yes
+
+### RunVpcFlowLogs
+
+1. **Synopsis:**
+   Optionally, capture information about the IP traffic going to and from network interfaces in your VPC.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Default:** No
+1. **References:**
+    1. [VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html).
+
+### RunWebApp
+
+1. **Synopsis:**
+   Optionally, run the
+   [entity-search-web-app](https://github.com/Senzing/entity-search-web-app)
+   which gives a web-based representation of data stored in the Senzing data model.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Example:**
+1. **Default:** Yes
+
+### RunXterm
+
+1. **Synopsis:**
+   Optionally, run the
+   [Senzing Xterm](https://github.com/Senzing/docker-xterm)
+   which gives a web-base terminal useful in running command line programs.
+1. **Required:** Yes
+1. **Type:** Boolean
+1. **Allowed values:**
+   [ "Yes" | "No" ]
+1. **Example:**
 1. **Default:** Yes
 
 ### SecurityResponsibility
@@ -295,6 +433,34 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Allowed values:**
     1. "I AGREE"
 1. **Default:** None
+
+### SenzingDataSource
+
+1. **Synopsis:**
+   If using [RunStreamProducer](#runstreamproducer), supply the `DATA_SOURCE` value to be used.
+1. **Required:** Yes
+1. **Type:** String
+1. **Default:** `TEST`
+
+### SenzingEntityType
+
+1. **Synopsis:**
+   If using [RunStreamProducer](#runstreamproducer), supply the `ENTITY_TYPE` value to be used.
+1. **Required:** Yes
+1. **Type:** String
+1. **Default:** `GENERIC`
+
+### SenzingInputUrl
+
+1. **Synopsis:**
+   If using [RunStreamProducer](#runstreamproducer), supply the URL of a tar-gzipped file in JSON-lines format containing records to ingest into Senzing.
+1. **Required:** Yes if running
+   [Stream Producer](#runstreamproducer),
+   otherwise no.
+1. **Type:** String
+1. **Allowed pattern:**  A URL starting with `http://` or `https://`.
+1. **Example:** `https://www.example.com/my/records.json`
+1. **Default:** `https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set.json`
 
 ### SenzingLicenseAsBase64
 
@@ -339,6 +505,33 @@ Technical information on AWS Cloudformation parameters can be seen at
    ```
 
 1. **Default:** None
+
+### SenzingRecordMax
+
+1. **Synopsis:**
+   When using [SenzingInputUrl](#senzinginputurl), this indicates the number of the last line that will be
+   read from the file.
+   It is used to limit the number of records ingested into Senzing.
+1. **Required:** Yes if using [SenzingInputUrl](#senzinginputurl), otherwise no.
+1. **Type:** Number
+1. **Allowed pattern:** Numbers. Specifically: `[0-9]*`
+1. **Allowed values:** 0 = Read entire file;  Any positive integer.
+1. **Example:** 15000000
+1. **Default:** 0
+
+### SenzingRecordMin
+
+1. **Synopsis:**
+   When using [SenzingInputUrl](#senzinginputurl), this indicates the number of the first line that will be
+   read from the file.
+   Used to skip lines at the beginning of the file.
+   It is handy if the beginning of the file has already been ingested into Senzing.
+1. **Required:** Yes if using [SenzingInputUrl](#senzinginputurl), otherwise no.
+1. **Type:** Number
+1. **Allowed pattern:** Numbers. Specifically: `[0-9]*`
+1. **Allowed values:** 0 = Read from beginning;  Any positive integer.
+1. **Example:** 100000
+1. **Default:** 0
 
 ### SenzingVersion
 
@@ -398,6 +591,13 @@ Technical information on AWS Cloudformation parameters can be seen at
 1. **Synopsis:**
    The queue that is populated with responses from inserting records into the Senzing Engine.
    This is commonly called "WithInfo" information.
+1. **Details:**
+   More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
+
+### QueueRedoerDeadLetter
+
+1. **Synopsis:**
+   The queue to which records that are not able to be ingested into Senzing Engine resoer are sent.
 1. **Details:**
    More information at [AWS SQS Console](https://console.aws.amazon.com/sqs/v2/home?#/queues).
 
