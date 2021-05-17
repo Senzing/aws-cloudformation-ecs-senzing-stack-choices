@@ -7,8 +7,9 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-basic: 1.0.1
-  For more information see https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic
+  Senzing aws-cloudformation-ecs-senzing-stack-choices: 1.0.0
+  For more information see
+  https://github.com/Senzing/aws-cloudformation-ecs/tree/main/cloudformation/aws-cloudformation-ecs-senzing-stack-choices
 
 # -----------------------------------------------------------------------------
 # Metadata
@@ -47,6 +48,27 @@ Metadata:
           default: 'Optional: Initial data load'
         Parameters:
           - RunStreamProducer
+          - SenzingInputUrl
+          - SenzingDataSource
+          - SenzingEntityType
+          - SenzingRecordMin
+          - SenzingRecordMax
+      -
+        Label:
+          default: 'Optional: Services'
+        Parameters:
+          - RunApiServer
+          - RunJupyter
+          - RunRedoer
+          - RunSshd
+          - RunSshdMax
+          - RunStreamLoader
+          - RunSwagger
+          - RunVpcFlowLogs
+          - RunWebApp
+          - RunXterm
+
+
     ParameterLabels:
       AcceptEula:
         default: >-
@@ -59,18 +81,60 @@ Metadata:
         default: 'Required: Name of stack having Senzing databases.'
       CognitoAdminEmail:
         default: 'Required: Email address for initial user.'
+      RunApiServer:
+        default: 'Optional: Would you like to run Senzing API server?'
+      RunJupyter:
+        default: 'Optional: Would you like to run Jupyter Notebooks service?'
+      RunRedoer:
+        default: 'Optional: Would you like to run Senzing Redoer service?'
+      RunSshd:
+        default: 'Optional: Would you like to run sshd service?'
+      RunSshdMax:
+        default: 'Optional: Would you like to run sshd-max service?'
+      RunStreamLoader:
+        default: 'Optional: Would you like to run stream-loader service?'
       RunStreamProducer:
         default: 'Optional: Would you like to have an initial set of data imported?'
+      RunSwagger:
+        default: 'Optional: Would you like to run Swagger service?'
+      RunVpcFlowLogs:
+        default: 'Optional: Would you like to enable AWS VPC Flow Logs?'
+      RunWebApp:
+        default: 'Optional: Would you like to run the Senzing WebApp service?'
+      RunXterm:
+        default: 'Optional: Would you like to run the Senzing XTerm service?'
       SecurityResponsibility:
         default: >-
           Required: A default deployment of this template is for public demonstration only.
           Before using authentic PII, ensure the security of your deployment.
           The security of this deployment is your responsibility.
           To acknowledge your understanding and acceptance of the foregoing, type “I AGREE”.
+      SenzingDataSource:
+        default: >-
+          Required if initial data load requested.
+          The DATA_SOURCE (i.e. origin) of the records.
+      SenzingEntityType:
+        default: >-
+          Required if initial data load requested.
+          The ENTITY_TYPE of the records.
+      SenzingInputUrl:
+        default: >-
+          Required if initial data load requested.
+          URL to file of JSON records to be sent to AWS SQS queue.
       SenzingLicenseAsBase64:
         default: >-
           Required if inserting more than 100K records.
           Senzing license as base64 encoded string.
+      SenzingRecordMax:
+        default: >-
+          Required if initial data load requested.
+          Last record to read from file of JSON records.
+          '0' means read to end of file.
+      SenzingRecordMin:
+        default: >-
+          Required if initial data load requested.
+          First record to read from file of JSON records.
+          '0' means start from the beginning.
       SenzingVersion:
         default: 'Required: Version of Senzing to install.'
 
@@ -87,7 +151,7 @@ Parameters:
     AllowedPattern: '.+|^I_ACCEPT_THE_SENZING_EULA$'
     ConstraintDescription: AcceptEula parameter must be 'I_ACCEPT_THE_SENZING_EULA'
     Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#accepteula'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#accepteula'
     Type: String
 
 
@@ -95,7 +159,7 @@ Parameters:
     AllowedPattern: '(?:\d{1,3}\.){3}\d{1,3}(?:/\d\d?)?'
     ConstraintDescription: Inbound CIDR must be in the format n.n.n.n/n
     Default: 0.0.0.0/0
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#cidrinbound'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#cidrinbound'
     Type: String
 
 
@@ -103,13 +167,66 @@ Parameters:
     AllowedPattern: '.+|^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$'
     ConstraintDescription: Entering initial user email address is required to proceed
     Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#cognitoadminemail'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#cognitoadminemail'
     Type: String
 
 
   DatabaseStack:
     Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs/senzing-demo-full-stack/#databasestack'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#databasestack'
+    Type: String
+
+  RunApiServer:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runapiserver'
+    Type: String
+
+
+  RunJupyter:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runjupyter'
+    Type: String
+
+
+  RunRedoer:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runredoer'
+    Type: String
+
+
+  RunSshd:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runsshd'
+    Type: String
+
+
+  RunSshdMax:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runsshdmax'
+    Type: String
+
+
+  RunStreamLoader:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runstreamloader'
     Type: String
 
 
@@ -118,7 +235,43 @@ Parameters:
       - 'No'
       - 'Yes'
     Default: 'No'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#runstreamproducer'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runstreamproducer'
+    Type: String
+
+
+  RunSwagger:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runswagger'
+    Type: String
+
+
+  RunVpcFlowLogs:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runvpcflowlogs'
+    Type: String
+
+
+  RunWebApp:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runwebapp'
+    Type: String
+
+
+  RunXterm:
+    AllowedValues:
+      - 'No'
+      - 'Yes'
+    Default: 'No'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#xterm'
     Type: String
 
 
@@ -126,15 +279,45 @@ Parameters:
     AllowedPattern: '.+|^I AGREE$'
     ConstraintDescription: SecurityResponsibility parameter must be 'I AGREE'
     Default: '_'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#securityresponsibility'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#securityresponsibility'
+    Type: String
+
+
+  SenzingDataSource:
+    Default: TEST
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingdatasource'
+    Type: String
+
+
+  SenzingEntityType:
+    Default: GENERIC
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingentitytype'
+    Type: String
+
+
+  SenzingInputUrl:
+    Default: https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set.json
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzinginputurl'
     Type: String
 
 
   SenzingLicenseAsBase64:
-    ConstraintDescription: 'Must contain only Base64 characters. see https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzinglicenseasbase64'
+    ConstraintDescription: 'Must contain only Base64 characters. see https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzinglicenseasbase64'
     Default: ' '
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzinglicenseasbase64'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzinglicenseasbase64'
     Type: String
+
+
+  SenzingRecordMax:
+    Default: 0
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingrecordmax'
+    Type: Number
+
+
+  SenzingRecordMin:
+    Default: 0
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingrecordmin'
+    Type: Number
 
 
   SenzingVersion:
@@ -142,7 +325,7 @@ Parameters:
       - '2.5.1'
       - '2.5.0'
     Default: '2.5.1'
-    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#senzingversion'
+    Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingversion'
     Type: String
 
 # -----------------------------------------------------------------------------
@@ -204,18 +387,9 @@ Mappings:
       value: "senzingapi-2.5.0-21104"
 
   Constants:
-    Run:
-      ApiServer: Yes
-      Jupyter: No
-      Redoer: Yes
-      Sshd: Yes
-      StreamLoader: Yes
-      Swagger: Yes
-      VpcFlowLogs: No
-      WebApp: Yes
-      Xterm: Yes
+
     Stack:
-      Name: basic
+      Name: choices
     StreamProducer:
       DataSource: TEST
       EntityType: GENERIC
@@ -231,49 +405,54 @@ Mappings:
 Conditions:
 
   IfRunApiServer: !Equals
-    - !FindInMap [Constants, Run, ApiServer]
-    - Yes
+    - !Ref RunApiServer
+    - 'Yes'
 
   IfRunJupyter: !Equals
-    - !FindInMap [Constants, Run, Jupyter]
-    - Yes
+    - !Ref RunJupyter
+    - 'Yes'
 
   IfRunRedoer: !Equals
-    - !FindInMap [Constants, Run, Redoer]
-    - Yes
+    - !Ref RunRedoer
+    - 'Yes'
 
   IfRunSshd: !Equals
-    - !FindInMap [Constants, Run, Sshd]
-    - Yes
+    - !Ref RunSshd
+    - 'Yes'
+
+  IfRunSshdMax: !Equals
+    - !Ref RunSshdMax
+    - 'Yes'
 
   IfRunStreamLoader: !Equals
-    - !FindInMap [Constants, Run, StreamLoader]
-    - Yes
+    - !Ref RunStreamLoader
+    - 'Yes'
 
   IfRunStreamProducer: !Equals
     - !Ref RunStreamProducer
     - 'Yes'
 
   IfRunSwagger: !Equals
-    - !FindInMap [Constants, Run, Swagger]
-    - Yes
+    - !Ref RunSwagger
+    - 'Yes'
 
   IfRunVpcFlowLogs: !Equals
-    - !FindInMap [Constants, Run, VpcFlowLogs]
-    - Yes
+    - !Ref RunVpcFlowLogs
+    - 'Yes'
 
   IfRunWebApp: !Equals
-    - !FindInMap [Constants, Run, WebApp]
-    - Yes
+    - !Ref RunWebApp
+    - 'Yes'
 
   IfRunXterm: !Equals
-    - !FindInMap [Constants, Run, Xterm]
-    - Yes
+    - !Ref RunXterm
+    - 'Yes'
 
 # -- Compound "if" conditions --------------------------------------------
 
   IfUsingApiServer: !Or
     - !Condition IfRunApiServer
+    - !Condition IfRunSwagger
     - !Condition IfRunWebApp
 
   IfUsingRedoQueues: !Or
@@ -1972,47 +2151,6 @@ Resources:
     Type: AWS::Lambda::Function
 
 
-  LambdaFunctionStringToLower:
-    Properties:
-      Code:
-        ZipFile: |
-          #!/usr/bin/env python3
-
-          import cfnresponse
-          import json
-          import logging
-          import traceback
-
-          logger = logging.getLogger()
-          logger.setLevel(logging.INFO)
-
-          def handler(event, context):
-              result = cfnresponse.SUCCESS
-              response_data = {}
-              try:
-                  logger.info("Event: {0}".format(json.dumps(event)))
-                  if event['RequestType'] in ['Create', 'Update']:
-                      properties = event.get('ResourceProperties', {})
-                      input_string = properties.get('InputString', '')
-                      response_data["OutputString"] = input_string.lower()
-              except Exception as e:
-                  logger.error(e)
-                  traceback.print_exc()
-                  result = cfnresponse.FAILED
-              finally:
-                  cfnresponse.send(event, context, result, response_data)
-
-      Description: Performs string.lower()
-      FunctionName: !Sub "${AWS::StackName}-lambda-string-to-lower"
-      Handler: index.handler
-      Role: !GetAtt IamRoleLambda.Arn
-      Runtime: python3.8
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-string-to-lower"
-    Type: AWS::Lambda::Function
-
-
   LambdaFunctionSubnets:
     Properties:
       Code:
@@ -2314,107 +2452,9 @@ Resources:
     Type: Custom::LambdaRunnerInstallSenzing
 
 
-  LambdaRunnerInitPostgresCore:
-    DependsOn:
-     - LambdaRunnerInstallSenzing
-    Properties:
-      ClusterId: !Ref EcsCluster
-      RunTaskParameters:
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task
-        cluster: !Ref EcsCluster
-        count: 1
-        launchType: FARGATE
-        networkConfiguration:
-          awsvpcConfiguration:
-            assignPublicIp: DISABLED
-            securityGroups:
-              - !Ref Ec2SecurityGroupLambdaRunner
-            subnets:
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-1'
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-2'
-        platformVersion: 1.4.0
-        tags:
-          - key: Name
-            value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-core-run-task-parameters"
-        taskDefinition: !Ref EcsTaskDefinitionInitPostgresCore
-      ServiceToken: !GetAtt LambdaFunctionRunTaskAndWait.Arn
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-core"
-    Type: Custom::LambdaRunnerInitPostgresCore
-
-
-  LambdaRunnerInitPostgresLibfeat:
-    DependsOn:
-     - LambdaRunnerInstallSenzing
-    Properties:
-      ClusterId: !Ref EcsCluster
-      RunTaskParameters:
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task
-        cluster: !Ref EcsCluster
-        count: 1
-        launchType: FARGATE
-        networkConfiguration:
-          awsvpcConfiguration:
-            assignPublicIp: DISABLED
-            securityGroups:
-              - !Ref Ec2SecurityGroupLambdaRunner
-            subnets:
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-1'
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-2'
-        platformVersion: 1.4.0
-        tags:
-          - key: Name
-            value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-libfeat-run-task-parameters"
-        taskDefinition: !Ref EcsTaskDefinitionInitPostgresLibfeat
-      ServiceToken: !GetAtt LambdaFunctionRunTaskAndWait.Arn
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-libfeat"
-    Type: Custom::LambdaRunnerInitPostgresLibfeat
-
-
-  LambdaRunnerInitPostgresRes:
-    DependsOn:
-     - LambdaRunnerInstallSenzing
-    Properties:
-      ClusterId: !Ref EcsCluster
-      RunTaskParameters:
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ECS.Client.run_task
-        cluster: !Ref EcsCluster
-        count: 1
-        launchType: FARGATE
-        networkConfiguration:
-          awsvpcConfiguration:
-            assignPublicIp: DISABLED
-            securityGroups:
-              - !Ref Ec2SecurityGroupLambdaRunner
-            subnets:
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-1'
-              - Fn::ImportValue:
-                  Fn::Sub: '${DatabaseStack}-subnet-private-2'
-        platformVersion: 1.4.0
-        tags:
-          - key: Name
-            value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-res-run-task-parameters"
-        taskDefinition: !Ref EcsTaskDefinitionInitPostgresRes
-      ServiceToken: !GetAtt LambdaFunctionRunTaskAndWait.Arn
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-init-postgres-res"
-    Type: Custom::LambdaRunnerInitPostgresRes
-
-
   LambdaRunnerInitSenzing:
     DependsOn:
-     - LambdaRunnerInitPostgresCore
-     - LambdaRunnerInitPostgresLibfeat
-     - LambdaRunnerInitPostgresRes
+      - LambdaRunnerInstallSenzing
     Properties:
       ClusterId: !Ref EcsCluster
       RunTaskParameters:
@@ -2454,16 +2494,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-lambda-runner-ssh-password"
     Type: Custom::LambdaRunnerSshPassword
-
-
-  LambdaRunnerStackNameAsLower:
-    Properties:
-      InputString: !Sub "${AWS::StackName}"
-      ServiceToken: !GetAtt LambdaFunctionStringToLower.Arn
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-lambda-runner-stack-name-as-lower"
-    Type: Custom::LambdaRunnerStackNameAsLower
 
 
   LambdaRunnerStreamProducer:
@@ -3312,201 +3342,6 @@ Resources:
     Type: AWS::ECS::TaskDefinition
 
 
-  EcsTaskDefinitionInitPostgresCore:
-    Properties:
-      ContainerDefinitions:
-        -
-          Environment:
-            -
-              Name: SENZING_DATABASE_URL
-              Value:
-                Fn::Sub:
-                  - "postgresql://${DatabaseUsername}:${DatabasePassword}@${DatabaseHost}:${DatabasePort}/${DatabaseName}"
-                  - DatabaseHost:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-host-core'
-                    DatabaseName:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-name'
-                    DatabasePassword:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-password'
-                    DatabasePort:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-port-core'
-                    DatabaseUsername:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-username'
-            -
-              Name: SENZING_SQL_FILE
-              Value: /opt/senzing/g2/resources/schema/g2core-schema-postgresql-create.sql
-          Essential: true
-          Image: public.ecr.aws/senzing/postgresql-client:1.0.0
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogsLogGroupMain
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: job
-          MountPoints:
-            -
-              SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-          Name: postgresinit
-          Privileged: false
-          ReadonlyRootFilesystem: false
-      Cpu: '512'
-      ExecutionRoleArn: !GetAtt IamRoleInitPostgres.Arn
-      Family: !Sub "${AWS::StackName}-task-definition-init-postgres-core"
-      Memory: '1024'
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ecs-task-definition-init-postgres-core"
-      Volumes:
-        -
-          Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-    Type: AWS::ECS::TaskDefinition
-
-
-  EcsTaskDefinitionInitPostgresLibfeat:
-    Properties:
-      ContainerDefinitions:
-        -
-          Environment:
-            -
-              Name: SENZING_DATABASE_URL
-              Value:
-                Fn::Sub:
-                  - "postgresql://${DatabaseUsername}:${DatabasePassword}@${DatabaseHost}:${DatabasePort}/${DatabaseName}"
-                  - DatabaseHost:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-host-libfeat'
-                    DatabaseName:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-name'
-                    DatabasePassword:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-password'
-                    DatabasePort:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-port-libfeat'
-                    DatabaseUsername:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-username'
-            -
-              Name: SENZING_SQL_FILE
-              Value: /opt/senzing/g2/resources/schema/g2core-schema-postgresql-create.sql
-          Essential: true
-          Image: public.ecr.aws/senzing/postgresql-client:1.0.0
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogsLogGroupMain
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: job
-          MountPoints:
-            -
-              SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-          Name: postgresinit
-          Privileged: false
-          ReadonlyRootFilesystem: false
-      Cpu: '512'
-      ExecutionRoleArn: !GetAtt IamRoleInitPostgres.Arn
-      Family: !Sub "${AWS::StackName}-task-definition-init-postgres-libfeat"
-      Memory: '1024'
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ecs-task-definition-init-postgres-libfeat"
-      Volumes:
-        -
-          Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-    Type: AWS::ECS::TaskDefinition
-
-
-  EcsTaskDefinitionInitPostgresRes:
-    Properties:
-      ContainerDefinitions:
-        -
-          Environment:
-            -
-              Name: SENZING_DATABASE_URL
-              Value:
-                Fn::Sub:
-                  - "postgresql://${DatabaseUsername}:${DatabasePassword}@${DatabaseHost}:${DatabasePort}/${DatabaseName}"
-                  - DatabaseHost:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-host-res'
-                    DatabaseName:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-name'
-                    DatabasePassword:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-password'
-                    DatabasePort:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-port-res'
-                    DatabaseUsername:
-                      Fn::ImportValue:
-                        Fn::Sub: '${DatabaseStack}-database-username'
-            -
-              Name: SENZING_SQL_FILE
-              Value: /opt/senzing/g2/resources/schema/g2core-schema-postgresql-create.sql
-          Essential: true
-          Image: public.ecr.aws/senzing/postgresql-client:1.0.0
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref LogsLogGroupMain
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: job
-          MountPoints:
-            -
-              SourceVolume: senzing-g2-dir
-              ContainerPath: /opt/senzing/g2
-              ReadOnly: true
-          Name: postgresinit
-          Privileged: false
-          ReadonlyRootFilesystem: false
-      Cpu: '512'
-      ExecutionRoleArn: !GetAtt IamRoleInitPostgres.Arn
-      Family: !Sub "${AWS::StackName}-task-definition-init-postgres-res"
-      Memory: '1024'
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-        - FARGATE
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-ecs-task-definition-init-postgres-res"
-      Volumes:
-        -
-          Name: senzing-g2-dir
-          EFSVolumeConfiguration:
-            AuthorizationConfig: {}
-            FilesystemId:
-              Ref: EfsFileSystem
-            RootDirectory: /g2
-    Type: AWS::ECS::TaskDefinition
-
-
   EcsTaskDefinitionInitSenzing:
     Properties:
       ContainerDefinitions:
@@ -3517,10 +3352,15 @@ Resources:
               Value: !GetAtt SsmParameterSenzingEngineConfigurationJson.Value
             -
               Name: SENZING_G2CONFIG_GTC
-              Value: |
-                addDataSource CUSTOMER
-                addDataSource WATCHLIST
-                save
+              Value: !Sub
+                - |
+                  addDataSource CUSTOMER
+                  addDataSource WATCHLIST
+                  addDataSource ${SenzingDataSource}
+                  addEntityType ${SenzingEntityType}
+                  save
+                - SenzingDataSource: !Ref SenzingDataSource
+                  SenzingEntityType: !Ref SenzingEntityType
             -
               Name: SENZING_LICENSE_BASE64_ENCODED
               Value: !Sub "${SenzingLicenseAsBase64}"
@@ -4242,13 +4082,13 @@ Resources:
           Environment:
             -
               Name: SENZING_DEFAULT_DATA_SOURCE
-              Value: !FindInMap [Constants, StreamProducer, DataSource]
+              Value: !Ref SenzingDataSource
             -
               Name: SENZING_DEFAULT_ENTITY_TYPE
-              Value: !FindInMap [Constants, StreamProducer, EntityType]
+              Value: !Ref SenzingEntityType
             -
               Name: SENZING_INPUT_URL
-              Value: !FindInMap [Constants, StreamProducer, InputUrl]
+              Value: !Sub "${SenzingInputUrl}"
             -
               Name: SENZING_MONITORING_PERIOD_IN_SECONDS
               Value: '60'
@@ -4257,10 +4097,10 @@ Resources:
               Value: '200'
             -
               Name: SENZING_RECORD_MAX
-              Value: !FindInMap [Constants, StreamProducer, RecordMax]
+              Value: !Sub "${SenzingRecordMax}"
             -
               Name: SENZING_RECORD_MIN
-              Value: !FindInMap [Constants, StreamProducer, RecordMin]
+              Value: !Sub "${SenzingRecordMin}"
             -
               Name: SENZING_RECORD_MONITOR
               Value: '100000'
@@ -4658,6 +4498,37 @@ Resources:
     Type: AWS::ECS::Service
 
 
+  EcsServiceSshdMax:
+    Condition: IfRunSshdMax
+    DependsOn:
+     - LambdaRunnerInitSenzing
+    Properties:
+      Cluster: !Ref EcsCluster
+      DesiredCount: 1
+      EnableECSManagedTags: true
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref Ec2SecurityGroupSshd
+          Subnets:
+            - !Ref Ec2SubnetPublic1
+            - !Ref Ec2SubnetPublic2
+            - Fn::ImportValue:
+                Fn::Sub: '${DatabaseStack}-subnet-private-1'
+            - Fn::ImportValue:
+                Fn::Sub: '${DatabaseStack}-subnet-private-2'
+      PlatformVersion: 1.4.0
+      PropagateTags: TASK_DEFINITION
+      ServiceName: sshd-max
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-ecs-service-sshd-max"
+      TaskDefinition: !Ref EcsTaskDefinitionSshdMax
+    Type: AWS::ECS::Service
+
+
   EcsServiceStreamLoader:
     Condition: IfRunStreamLoader
     DependsOn:
@@ -4934,156 +4805,156 @@ Outputs:
 
   0penFirst:
     Condition: IfRunWebApp
-    Description: 'URL for Senzing Web App. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#0penfirst'
+    Description: 'URL for Senzing Web App. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#0penfirst'
     Export:
       Name: !Sub "${AWS::StackName}-open-first"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/app/"
 
   AccountID:
-    Description: 'The accountID Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#accountid'
+    Description: 'The accountID Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#accountid'
     Export:
       Name: !Sub "${AWS::StackName}-account-id"
     Value: !Sub "${AWS::AccountId}"
 
   CertificateArn:
     Condition: IfUsingWeb
-    Description: 'ARN of the SSL certificate. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#certificatearn'
+    Description: 'ARN of the SSL certificate. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#certificatearn'
     Export:
       Name: !Sub "${AWS::StackName}-certificate-arn"
     Value: !GetAtt IamServerCertificate.Arn
 
   Host:
     Condition: IfUsingWeb
-    Description: 'Host name of public services. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#host'
+    Description: 'Host name of public services. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#host'
     Export:
       Name: !Sub "${AWS::StackName}-host"
     Value: !GetAtt LoadBalancerPublic.DNSName
 
   QueueDeadLetter:
     Condition: IfUsingQueues
-    Description: 'URL of the dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queuedeadletter'
+    Description: 'URL of the dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queuedeadletter'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-deadletter"
     Value: !Ref SqsDeadLetter
 
   QueueInput:
     Condition: IfUsingQueues
-    Description: 'URL of the queue of records to be ingested into Senzing. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueinput'
+    Description: 'URL of the queue of records to be ingested into Senzing. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queueinput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-input"
     Value: !Ref SqsInput
 
   QueueOutput:
     Condition: IfUsingQueues
-    Description: 'URL of the queue with info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueoutput'
+    Description: 'URL of the queue with info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queueoutput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-output"
     Value: !Ref SqsOutput
 
   QueueRedoerDeadLetter:
     Condition: IfUsingRedoQueues
-    Description: 'URL of the redoer dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoerdeadletter'
+    Description: 'URL of the redoer dead-letter queue. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queueredoerdeadletter'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-deadletter"
     Value: !Ref SqsRedoerDeadLetter
 
   QueueRedoerInput:
     Condition: IfUsingRedoQueues
-    Description: 'URL of the queue holding redo records to be processed. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoerinput'
+    Description: 'URL of the queue holding redo records to be processed. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queueredoerinput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-input"
     Value: !Ref SqsRedoerInput
 
   QueueRedoerOutput:
     Condition: IfUsingRedoQueues
-    Description: 'URL of the queue with redoer info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#queueredoeroutput'
+    Description: 'URL of the queue with redoer info records. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#queueredoeroutput'
     Export:
       Name: !Sub "${AWS::StackName}-sqs-redoer-output"
     Value: !Ref SqsRedoerOutput
 
   SshPassword:
     Condition: IfUsingSshd
-    Description: 'The randomly generated password for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#sshpassword'
+    Description: 'The randomly generated password for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#sshpassword'
     Export:
       Name: !Sub "${AWS::StackName}-ssh-password"
     Value: !GetAtt LambdaRunnerSshPassword.RandomString
 
   SshUsername:
     Condition: IfUsingSshd
-    Description: 'The username for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#sshusername'
+    Description: 'The username for SSH access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#sshusername'
     Export:
       Name: !Sub "${AWS::StackName}-ssh-username"
     Value: root
 
   SubnetPublic1:
-    Description: 'The ID of public subnet 1. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#subnetpublic1'
+    Description: 'The ID of public subnet 1. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#subnetpublic1'
     Export:
       Name: !Sub "${AWS::StackName}-subnet-public-1"
     Value: !Ref Ec2SubnetPublic1
 
   SubnetPublic2:
-    Description: 'The ID of public subnet 2. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#subnetpublic2'
+    Description: 'The ID of public subnet 2. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#subnetpublic2'
     Export:
       Name: !Sub "${AWS::StackName}-subnet-public-2"
     Value: !Ref Ec2SubnetPublic2
 
   UrlApiServer:
     Condition: IfUsingApiServer
-    Description: "URL for API Server. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlapiserver"
+    Description: "URL for API Server. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urlapiserver"
     Export:
       Name: !Sub "${AWS::StackName}-url-api-server"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/api/"
 
   UrlApiServerHeartbeat:
     Condition: IfUsingApiServer
-    Description: "URL for API Server's heartbeat. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlapiserverheartbeat"
+    Description: "URL for API Server's heartbeat. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urlapiserverheartbeat"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/api/heartbeat/"
 
   UrlJupyter:
     Condition: IfRunJupyter
-    Description: 'URL for Jupyter Notebooks. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urljupyter'
+    Description: 'URL for Jupyter Notebooks. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urljupyter'
     Export:
       Name: !Sub "${AWS::StackName}-url-jupyter"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/jupyter/"
 
   UrlSwagger:
     Condition: IfRunSwagger
-    Description: 'URL for Swagger. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlswagger'
+    Description: 'URL for Swagger. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urlswagger'
     Export:
       Name: !Sub "${AWS::StackName}-url-swagger"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/swagger/"
 
   UrlWebApp:
     Condition: IfRunWebApp
-    Description: 'URL for Senzing Web App. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlwebapp'
+    Description: 'URL for Senzing Web App. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urlwebapp'
     Export:
       Name: !Sub "${AWS::StackName}-url-webapp"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/app/"
 
   UrlXterm:
     Condition: IfRunXterm
-    Description: 'URL for Senzing XTerm. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#urlxterm'
+    Description: 'URL for Senzing XTerm. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#urlxterm'
     Export:
       Name: !Sub "${AWS::StackName}-url-xterm"
     Value: !Sub "https://${LoadBalancerPublic.DNSName}/xterm/"
 
   UserInitPassword:
     Condition: IfUsingWeb
-    Description: 'One time password for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#userinitpassword'
+    Description: 'One time password for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#userinitpassword'
     Export:
       Name: !Sub "${AWS::StackName}-user-init-password"
     Value: !GetAtt LambdaRunnerWebPassword.RandomPassword
 
   UserName:
     Condition: IfUsingWeb
-    Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#username'
+    Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#username'
     Export:
       Name: !Sub "${AWS::StackName}-user-name"
     Value: !Ref CognitoAdminEmail
 
   UserPool:
     Condition: IfUsingWeb
-    Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-basic/#userpool'
+    Description: 'Username for web access. Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#userpool'
     Export:
       Name: !Sub "${AWS::StackName}-user-pool"
     Value: !Sub "https://console.aws.amazon.com/cognito/users/#/pool/${UserPool}/users"
