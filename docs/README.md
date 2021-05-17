@@ -19,21 +19,20 @@ The `aws-cloudformation-ecs-senzing-stack-choices` demonstration is an AWS Cloud
     1. Routes
     1. IAM Roles and Policies
     1. Logging
-1. AWS services
+1. AWS services deployed, if required
     1. AWS Cognito
     1. AWS Elastic Container Service (ECS) Fargate
     1. AWS Elastic File System (EFS)
     1. AWS Simple Queue Service (SQS)
-1. Senzing services
+1. Optional Senzing services
     1. Senzing API server
     1. Senzing Entity Search Web App
     1. Senzing Redoer
     1. Senzing SSH access
     1. Senzing Stream-Loader
+    1. Senzing Stream-producer
     1. Senzing Xterm
     1. SwaggerUI
-1. Optional services:
-    1. Senzing Stream-producer
 
 The following diagram shows the relationship of the docker containers in this docker composition.
 Arrows represent data flow.
@@ -213,8 +212,6 @@ template can be see in the [AWS Management Console](https://console.aws.amazon.c
 1. Visit [AWS Cloudformation console](https://console.aws.amazon.com/cloudformation/home).
 1. Choose appropriate "Stack name"
 1. Choose "Outputs" tab.
-    1. For descriptions of outputs, click on the value for `ADescriptionOfOutputs`,
-       which links to [Outputs](#outputs) further down this page.
 
 ## Parameters
 
