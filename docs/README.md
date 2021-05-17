@@ -1,15 +1,16 @@
-# aws-cloudformation-ecs-senzing-stack-basic
+# aws-cloudformation-ecs-senzing-stack-choices
 
 ## Synopsis
 
-`aws-cloudformation-ecs-senzing-stack-basic` deploys Senzing using an AWS Cloudformation template.
-Before deploying this Cloudformation template,
-[aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
-must be deployed.
+The `aws-cloudformation-ecs-senzing-stack-choices` AWS Cloudformation template
+deploys user-specified components of the Senzing stack for use with a previously deployed
+[aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster) Cloudformation stack
+that has been initialized by deploying the
+[aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic) Cloudformation stack.
 
 ## Overview
 
-The `aws-cloudformation-ecs-senzing-stack-basic` demonstration is an AWS Cloudformation template that creates the following resources:
+The `aws-cloudformation-ecs-senzing-stack-choices` demonstration is an AWS Cloudformation template that creates the following resources:
 
 1. AWS infrastructure
     1. Elastic IP address
@@ -51,7 +52,7 @@ This docker formation brings up the following docker containers:
 1. *[senzing/xterm](https://github.com/Senzing/docker-xterm)*
 
 GitHub repository for
-[aws-cloudformation-ecs-senzing-stack-basic](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic).
+[aws-cloudformation-ecs-senzing-stack-choices](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices).
 
 ### Contents
 
@@ -74,7 +75,7 @@ For the most part, instructions are copy and paste.
 Whenever thinking is needed, it's marked with a "thinking" icon :thinking:.
 Whenever customization is needed, it's marked with a "pencil" icon :pencil2:.
 If the instructions are not clear, please let us know by opening a new
-[Documentation issue](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic/issues/new?template=documentation_request.md)
+[Documentation issue](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices/issues/new?template=documentation_request.md)
 describing where we can improve.   Now on with the show...
 
 ### Legend
@@ -99,7 +100,7 @@ describing where we can improve.   Now on with the show...
    With appropriate permissions, the
    [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/)
    can help evaluate costs.
-1. Visit [AWS Cloudformation with Senzing template](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=senzing-basic&templateURL=https://s3.amazonaws.com/public-read-access/aws-cloudformation-ecs-senzing-stack-basic/cloudformation.yaml)
+1. Visit [AWS Cloudformation with Senzing template](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=senzing-choices&templateURL=https://s3.amazonaws.com/public-read-access/aws-cloudformation-ecs-senzing-stack-choices/cloudformation.yaml)
 1. At lower-right, click on "Next" button.
 1. In **Specify stack details**
     1. In **Parameters**
@@ -115,8 +116,11 @@ describing where we can improve.   Now on with the show...
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
                Cloudformation stack
                Example:  `senzing-db`
-    1. Other parameters are optional.
-       The default values are fine.
+        1. In **Optional: Initial data load**
+            1. If loading data during deployment is desired, choose "Yes" for *"Optional: Would you like to have an initial set of data imported?"*
+            1. If "Yes" is chosen, the other field specify what data is to be loaded.
+        1. In **Optional: Service**
+            1. Individual services can be selected.
     1. At lower-right, click "Next" button.
 1. In **Configure stack options**
     1. At lower-right, click "Next" button.
@@ -159,7 +163,7 @@ to draw attention to this AWS Cloudformation defect.
 ### Review AWS Cloudformation
 
 The AWS resources created by the
-[cloudformation.yaml](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-basic/blob/main/cloudformation.yaml)
+[cloudformation.yaml](https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices/blob/main/cloudformation.yaml)
 template can be see in the [AWS Management Console](https://console.aws.amazon.com).
 
 1. CloudFormation
