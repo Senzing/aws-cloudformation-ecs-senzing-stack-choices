@@ -322,10 +322,11 @@ Parameters:
 
   SenzingVersion:
     AllowedValues:
+      - '2.7.0'
       - '2.6.0'
       - '2.5.1'
       - '2.5.0'
-    Default: '2.6.0'
+    Default: '2.7.0'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingversion'
     Type: String
 
