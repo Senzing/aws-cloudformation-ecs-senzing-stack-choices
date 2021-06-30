@@ -2329,6 +2329,8 @@ Resources:
                           if done_count == ( len(mount_targets) + len(file_systems) ):
                               done = True
                       logger.info("Done, mount targets and file systems available")
+                      #hack, wait for a few minutes for EFS to actually be available
+                      time.sleep(360)
               except Exception as e:
                   logger.error(e)
                   traceback.print_exc()
