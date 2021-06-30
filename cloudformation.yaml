@@ -2329,8 +2329,6 @@ Resources:
                           if done_count == ( len(mount_targets) + len(file_systems) ):
                               done = True
                       logger.info("Done, mount targets and file systems available")
-                      time.sleep(360)
-
               except Exception as e:
                   logger.error(e)
                   traceback.print_exc()
