@@ -2161,6 +2161,47 @@ Resources:
     Type: AWS::Lambda::Function
 
 
+  LambdaFunctionStringToLower:
+    Properties:
+      Code:
+        ZipFile: |
+          #!/usr/bin/env python3
+
+          import cfnresponse
+          import json
+          import logging
+          import traceback
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          def handler(event, context):
+              result = cfnresponse.SUCCESS
+              response_data = {}
+              try:
+                  logger.info("Event: {0}".format(json.dumps(event)))
+                  if event['RequestType'] in ['Create', 'Update']:
+                      properties = event.get('ResourceProperties', {})
+                      input_string = properties.get('InputString', '')
+                      response_data["OutputString"] = input_string.lower()
+              except Exception as e:
+                  logger.error(e)
+                  traceback.print_exc()
+                  result = cfnresponse.FAILED
+              finally:
+                  cfnresponse.send(event, context, result, response_data)
+
+      Description: Performs string.lower()
+      FunctionName: !Sub "${AWS::StackName}-lambda-string-to-lower"
+      Handler: index.handler
+      Role: !GetAtt IamRoleLambda.Arn
+      Runtime: python3.8
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-lambda-string-to-lower"
+    Type: AWS::Lambda::Function
+
+
   LambdaFunctionSubnets:
     Properties:
       Code:
@@ -2521,6 +2562,16 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-lambda-runner-ssh-password"
     Type: Custom::LambdaRunnerSshPassword
+
+
+  LambdaRunnerStackNameAsLower:
+    Properties:
+      InputString: !Sub "${AWS::StackName}"
+      ServiceToken: !GetAtt LambdaFunctionStringToLower.Arn
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-lambda-runner-stack-name-as-lower"
+    Type: Custom::LambdaRunnerStackNameAsLower
 
 
   LambdaRunnerStreamProducer:
@@ -3106,7 +3157,7 @@ Resources:
   UserPoolDomain: # Provides Cognito Login Page
     Condition: IfUsingWeb
     Properties:
-      Domain: !Sub "${AWS::StackName}"
+      Domain: !GetAtt LambdaRunnerStackNameAsLower.OutputString
       UserPoolId: !Ref UserPool
     Type: AWS::Cognito::UserPoolDomain
 
