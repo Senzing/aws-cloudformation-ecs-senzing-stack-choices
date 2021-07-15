@@ -4575,10 +4575,6 @@ Resources:
           Subnets:
             - !Ref Ec2SubnetPublic1
             - !Ref Ec2SubnetPublic2
-            - Fn::ImportValue:
-                Fn::Sub: '${DatabaseStack}-subnet-private-1'
-            - Fn::ImportValue:
-                Fn::Sub: '${DatabaseStack}-subnet-private-2'
       PlatformVersion: 1.4.0
       PropagateTags: TASK_DEFINITION
       ServiceName: sshd
@@ -4606,10 +4602,6 @@ Resources:
           Subnets:
             - !Ref Ec2SubnetPublic1
             - !Ref Ec2SubnetPublic2
-            - Fn::ImportValue:
-                Fn::Sub: '${DatabaseStack}-subnet-private-1'
-            - Fn::ImportValue:
-                Fn::Sub: '${DatabaseStack}-subnet-private-2'
       PlatformVersion: 1.4.0
       PropagateTags: TASK_DEFINITION
       ServiceName: sshd-max
