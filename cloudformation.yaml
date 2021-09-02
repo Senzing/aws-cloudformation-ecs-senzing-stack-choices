@@ -3729,10 +3729,6 @@ Resources:
               awslogs-stream-prefix: service
           MountPoints:
             -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
-            -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
               ReadOnly: true
@@ -3759,13 +3755,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-loader"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -4118,10 +4107,6 @@ Resources:
               awslogs-stream-prefix: service
           MountPoints:
             -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
-            -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
               ReadOnly: true
@@ -4148,13 +4133,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-stream-loader"
       TaskRoleArn: !GetAtt IamRoleStreamLoader.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
