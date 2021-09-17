@@ -7,7 +7,7 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-choices: 1.0.1
+  Senzing aws-cloudformation-ecs-senzing-stack-choices: 1.0.2
   For more information see
   https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices
 
@@ -29,15 +29,15 @@ Metadata:
           - SenzingLicenseAsBase64
       -
         Label:
+          default: Identify existing database stack
+        Parameters:
+          - DatabaseStack
+      -
+        Label:
           default: Security
         Parameters:
           - CognitoAdminEmail
           - CidrInbound
-      -
-        Label:
-          default: Identify existing resources
-        Parameters:
-          - DatabaseStack
       -
         Label:
           default: 'Optional: Initial data load'
@@ -75,10 +75,10 @@ Metadata:
           enter 'I_ACCEPT_THE_SENZING_EULA'.
       CidrInbound:
         default: 'Required: Provide the permitted IP address block allowed to connect using CIDR notation.'
-      DatabaseStack:
-        default: 'Required: Name of stack having Senzing databases.'
       CognitoAdminEmail:
-        default: 'Required: Email address for initial user.'
+        default: 'Required: Provide the email address for the administrative user.'
+      DatabaseStack:
+        default: 'Required: Provide the name of stack containing the Senzing database(s).'
       RunApiServer:
         default: 'Optional: Would you like to run Senzing API server?'
       RunJupyter:
@@ -597,6 +597,7 @@ Resources:
             Principal:
               Service:
                 - ecs-tasks.amazonaws.com
+                - sqs.amazonaws.com
         Version: '2012-10-17'
       Description: !Sub "${AWS::StackName}-iam-role-api-server"
       Tags:
@@ -938,6 +939,7 @@ Resources:
 
 
   IamPolicyCertificates:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-certificates"
       PolicyDocument:
@@ -947,7 +949,7 @@ Resources:
               - iam:UploadServerCertificate
             Effect: Allow
             Resource:
-              - '*'
+              - !GetAtt IamServerCertificate.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleLambda
@@ -1045,7 +1047,6 @@ Resources:
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleApiServer
-       - !Ref IamRoleFlowLog
        - !Ref IamRoleG2ConfigTool
        - !Ref IamRoleInitEfs
        - !Ref IamRoleInitPostgres
@@ -1064,6 +1065,7 @@ Resources:
 
 
   IamPolicyPassRole:
+    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-pass-role"
       PolicyDocument:
@@ -1073,7 +1075,14 @@ Resources:
               - iam:PassRole
             Effect: Allow
             Resource:
-              - '*'
+              - !GetAtt IamRoleFlowLog.Arn
+              - !GetAtt IamRoleG2ConfigTool.Arn
+              - !GetAtt IamRoleInitEfs.Arn
+              - !GetAtt IamRoleLambda.Arn
+              - !GetAtt IamRoleStreamProducer.Arn
+              - !GetAtt IamRoleInstallSenzing.Arn
+              - !GetAtt IamRoleInitPostgres.Arn
+              - !GetAtt IamRoleInitSenzing.Arn
         Version: '2012-10-17'
       Roles:
        - !Ref IamRoleFlowLog
@@ -1081,6 +1090,9 @@ Resources:
        - !Ref IamRoleInitEfs
        - !Ref IamRoleLambda
        - !Ref IamRoleStreamProducer
+       - !Ref IamRoleInstallSenzing
+       - !Ref IamRoleInitPostgres
+       - !Ref IamRoleInitSenzing
     Type: AWS::IAM::Policy
 
 
@@ -1100,23 +1112,6 @@ Resources:
        - !Ref IamRoleLambda
        - !Ref IamRoleSwagger
        - !Ref IamRoleXterm
-    Type: AWS::IAM::Policy
-
-
-  IamPolicyS3:
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-iam-policy-s3"
-      PolicyDocument:
-        Statement:
-          -
-            Action:
-              - s3:GetObject
-            Effect: Allow
-            Resource:
-              - '*'
-        Version: '2012-10-17'
-      Roles:
-       - !Ref IamRoleLambda
     Type: AWS::IAM::Policy
 
 
@@ -1173,6 +1168,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsDeadLetter.Arn
@@ -1182,6 +1178,7 @@ Resources:
       Roles:
        - !Ref IamRoleStreamLoader
        - !Ref IamRoleStreamProducer
+       - !Ref IamRoleApiServer
     Type: AWS::IAM::Policy
 
 
@@ -1194,6 +1191,7 @@ Resources:
           -
             Action:
               - sqs:SendMessage
+              - sqs:GetQueueAttributes
             Effect: Allow
             Resource:
               - !GetAtt SqsRedoerDeadLetter.Arn
@@ -1483,7 +1481,9 @@ Resources:
   Ec2SecurityGroupIngressApiServerPrivate:
     Condition: IfUsingApiServer
     Properties:
-      CidrIp: !Ref CidrInbound
+      CidrIp:
+        Fn::ImportValue:
+          Fn::Sub: '${DatabaseStack}-ec2-VpcId-cidrblock'
       Description: Senzing API server
       FromPort: 8250
       GroupId:
@@ -1520,7 +1520,9 @@ Resources:
 
   Ec2SecurityGroupIngressNFS:
     Properties:
-      CidrIp: !Ref CidrInbound
+      CidrIp:
+        Fn::ImportValue:
+          Fn::Sub: '${DatabaseStack}-ec2-VpcId-cidrblock'
       Description: NFS
       FromPort: 2049
       IpProtocol: tcp
@@ -1564,6 +1566,18 @@ Resources:
       IpProtocol: tcp
       SourceSecurityGroupId: !GetAtt Ec2SecurityGroupLoadBalancerPublic.GroupId
       ToPort: 8251
+    Type: AWS::EC2::SecurityGroupIngress
+
+
+  Ec2SecurityGroupIngressWebAppWss:
+    Condition: IfRunWebApp
+    Properties:
+      Description: Allow Websocket on Container port 8255 from ALB
+      FromPort: 8255
+      GroupId: !GetAtt Ec2SecurityGroupLoadBalancerPublic.GroupId
+      IpProtocol: tcp
+      SourceSecurityGroupId: !GetAtt Ec2SecurityGroupLoadBalancerPublic.GroupId
+      ToPort: 8255
     Type: AWS::EC2::SecurityGroupIngress
 
 
@@ -1847,8 +1861,6 @@ Resources:
 
   LambdaFunctionCognitoCreateUser:
     Condition: IfUsingWeb
-    DependsOn:
-     - IamPolicyRoute53
     Properties:
       Code:
         ZipFile: |
@@ -2550,7 +2562,7 @@ Resources:
 
   LambdaRunnerInitSenzing:
     DependsOn:
-      - LambdaRunnerInstallSenzing
+     - LambdaRunnerInstallSenzing
     Properties:
       ClusterId: !Ref EcsCluster
       RunTaskParameters:
@@ -2885,6 +2897,29 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
 
 
+  TargetGroupWebAppWss:
+    Condition: IfRunWebApp
+    DependsOn:
+     - LoadBalancerPublic
+    Properties:
+      Matcher:
+        HttpCode: 200-299
+      Name: !Sub "${AWS::StackName}-tg-web-app-wss"
+      Port: 8255
+      Protocol: HTTP
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-target-group-web-app-wss"
+      TargetGroupAttributes:
+      - Key: deregistration_delay.timeout_seconds
+        Value: '60'
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: '${DatabaseStack}-ec2-VpcId'
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+
+
   TargetGroupXterm:
     Condition: IfRunXterm
     DependsOn:
@@ -3064,6 +3099,33 @@ Resources:
             - "/app/*"
             - "/app"
       ListenerArn: !Ref ListenerPort443
+      Priority: 6
+    Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
+
+
+  ListenerRuleWebAppWss:
+    Condition: IfRunWebApp
+    Properties:
+      Actions:
+        - AuthenticateCognitoConfig:
+            OnUnauthenticatedRequest: authenticate
+            Scope: openid
+            UserPoolArn: !GetAtt 'UserPool.Arn'
+            UserPoolClientId: !Ref UserPoolClient
+            UserPoolDomain: !Ref UserPoolDomain
+          Order: 1
+          Type: authenticate-cognito
+        -
+          Type: "forward"
+          TargetGroupArn: !Ref TargetGroupWebAppWss
+          Order: 2
+      Conditions:
+        -
+          Field: "path-pattern"
+          Values:
+            - "/app/ws/*"
+            - "/app/ws"
+      ListenerArn: !Ref ListenerPort443
       Priority: 5
     Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
 
@@ -3091,7 +3153,7 @@ Resources:
             - "/xterm/*"
             - "/xterm"
       ListenerArn: !Ref ListenerPort443
-      Priority: 6
+      Priority: 3
     Type: "AWS::ElasticLoadBalancingV2::ListenerRule"
 
 # -- UserPool -----------------------------------------------------------------
@@ -3122,25 +3184,25 @@ Resources:
               <p>
                   <b>Links:</b>
                   <ol>
-                    <li>
+                    <li style="${WebApp}">
                         <b>Senzing Entity Search web app: </b> <a href="https://${Host}/app">https://${Host}/app</a>
                       <br />
                         (For more details see the <a href="https://github.com/Senzing/entity-search-web-app">GitHub repository</a>)
                     </li>
-                      <br />
-                    <li>
+                    <br />
+                    <li style="${SwaggerUI}">
                         <b>Senzing API Server: </b> <a href="https://${Host}/api/heartbeat">https://${Host}/api/heartbeat</a>
                       <br />
                         (For more details see the <a href="https://github.com/Senzing/senzing-api-server">GitHub repository</a>)
                     </li>
                     <br />
-                    <li>
+                    <li style="${Xterm}">
                         <b>Senzing XTerm: </b> <a href="https://${Host}/xterm">https://${Host}/xterm</a>
                         <br />
                         (For more details see the <a href="https://github.com/Senzing/docker-xterm">GitHub repository</a>)
                     </li>
                     <br />
-                    <li>
+                    <li style="${SwaggerUI}">
                         <b>Senzing HTTP REST API: </b> <a href="https://${Host}/swagger">https://${Host}/swagger</a>
                         <br />
                         (For more details see the <a href="https://github.com/Senzing/senzing-rest-api-specification">GitHub repository</a>)
@@ -3168,6 +3230,9 @@ Resources:
               </html>
             - Contact: !Ref CognitoAdminEmail
               Host: !GetAtt LoadBalancerPublic.DNSName
+              SwaggerUI: !If [ IfRunSwagger, "", "display: none"]
+              WebApp: !If [IfRunWebApp, "", "display: none"]
+              Xterm: !If [IfRunXterm, "", "display: none"]
           EmailSubject: !Sub 'Information for AWS Cloudformation ${AWS::StackName} stack'
           SMSMessage: 'Use the username {username} and the temporary password {####} to log in for the first time.'
       AutoVerifiedAttributes:
@@ -3253,6 +3318,18 @@ Resources:
             -
               Name: SENZING_API_SERVER_URL_BASE_PATH
               Value: /api
+            -
+              Name: SENZING_API_SERVER_DEBUG
+              Value: 'false'
+            -
+              Name: SENZING_API_SERVER_VERBOSE
+              Value: 'false'
+            -
+              Name: SENZING_SQS_LOAD_QUEUE_URL
+              Value: !If [ IfUsingQueues, !Ref SqsInput, ""]
+            -
+              Name: SENZING_SQS_INFO_QUEUE_URL
+              Value: !If [ IfUsingQueues, !Ref SqsOutput, ""]
           Essential: true
           Image: !FindInMap [Constants, Images, ApiServer]
           LogConfiguration:
@@ -3836,10 +3913,6 @@ Resources:
               awslogs-stream-prefix: service
           MountPoints:
             -
-              SourceVolume: senzing-data-version-dir
-              ContainerPath: /opt/senzing/data
-              ReadOnly: true
-            -
               SourceVolume: senzing-etc-dir
               ContainerPath: /etc/opt/senzing
               ReadOnly: true
@@ -3866,13 +3939,6 @@ Resources:
           Value: !Sub "${AWS::StackName}-ecs-task-definition-redoer-producer"
       TaskRoleArn: !GetAtt IamRoleRedoer.Arn
       Volumes:
-        -
-          Name: senzing-data-version-dir
-          EFSVolumeConfiguration:
-              AuthorizationConfig: {}
-              FilesystemId:
-                Ref: EfsFileSystem
-              RootDirectory: /data/2.0.0
         -
           Name: senzing-etc-dir
           EFSVolumeConfiguration:
@@ -4029,14 +4095,14 @@ Resources:
           ReadonlyRootFilesystem: false
       Cpu: '4096'
       ExecutionRoleArn: !GetAtt IamRoleSshd.Arn
-      Family: !Sub "${AWS::StackName}-task-definition-sshd"
+      Family: !Sub "${AWS::StackName}-task-definition-sshd-max"
       Memory: '30720'
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-ecs-task-definition-sshd"
+          Value: !Sub "${AWS::StackName}-ecs-task-definition-sshd-max"
       Volumes:
         -
           Name: senzing-data-version-dir
@@ -4304,6 +4370,21 @@ Resources:
             -
               Name: SENZING_WEB_SERVER_VIRTUAL_PATH
               Value: /app
+            -
+              Name: SENZING_WEB_SERVER_ADMIN_AUTH_MODE
+              Value: NONE
+            -
+              Name: SENZING_WEB_SERVER_URL
+              Value: !Sub "http://${LoadBalancerPublic.DNSName}:8251/app"
+            -
+              Name: SENZING_WEB_SERVER_PROXY_LOGLEVEL
+              Value: debug
+            -
+              Name: SENZING_WEB_SERVER_INTERNAL_URL
+              Value: "http://localhost:8251/app"
+            -
+              Name: SENZING_WEB_SERVER_STREAM_CLIENT_URL
+              Value: !Sub "wss://${LoadBalancerPublic.DNSName}/app/ws"
           Essential: true
           Image: !FindInMap [Constants, Images, WebApp]
           LogConfiguration:
@@ -4316,6 +4397,9 @@ Resources:
           PortMappings:
             - ContainerPort: 8251
               HostPort: 8251
+              Protocol: tcp
+            - ContainerPort: 8255
+              HostPort: 8255
               Protocol: tcp
           Privileged: false
           ReadonlyRootFilesystem: false
@@ -4688,6 +4772,7 @@ Resources:
     DependsOn:
      - ListenerPort443
      - ListenerRuleWebApp
+     - ListenerRuleWebAppWss
     Properties:
       Cluster: !Ref EcsCluster
       DesiredCount: 1
@@ -4698,6 +4783,10 @@ Resources:
           ContainerName: webapp
           ContainerPort: 8251
           TargetGroupArn: !Ref TargetGroupWebApp
+        -
+          ContainerName: webapp
+          ContainerPort: 8255
+          TargetGroupArn: !Ref TargetGroupWebAppWss
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
