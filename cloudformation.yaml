@@ -7,7 +7,7 @@ AWSTemplateFormatVersion: 2010-09-09
 #     aws cloudformation validate-template: https://awscli.amazonaws.com/v2/documentation/api/latest/reference/cloudformation/validate-template.html
 
 Description: >-
-  Senzing aws-cloudformation-ecs-senzing-stack-choices: 1.2.3
+  Senzing aws-cloudformation-ecs-senzing-stack-choices: 1.2.4
   For more information see
   https://github.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices
 
@@ -322,13 +322,15 @@ Parameters:
 
   SenzingVersion:
     AllowedValues:
+      - '2.8.4'
+      - '2.8.3'
       - '2.8.2'
       - '2.8.1'
       - '2.7.0'
       - '2.6.0'
       - '2.5.1'
       - '2.5.0'
-    Default: '2.8.2'
+    Default: '2.8.4'
     Description: 'Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzingversion'
     Type: String
 
@@ -393,6 +395,10 @@ Rules:
 
 Mappings:
   SenzingVersionMap:
+    "2.8.4":
+      value: "senzingapi-2.8.4-21311"
+    "2.8.3":
+      value: "senzingapi-2.8.3-21277"
     "2.8.2":
       value: "senzingapi-2.8.2-21243"
     "2.8.1":
@@ -1065,7 +1071,6 @@ Resources:
 
 
   IamPolicyPassRole:
-    Condition: IfUsingWeb
     Properties:
       PolicyName: !Sub "${AWS::StackName}-iam-policy-pass-role"
       PolicyDocument:
