@@ -3910,7 +3910,7 @@ Resources:
               Value: !GetAtt SsmParameterSenzingEngineConfigurationJson.Value
             - Name: SENZING_SKIP_DATABASE_PERFORMANCE_TEST
               Value: "true"
-            - Name: XTERM
+            - Name: TERM
               Value: "xterm"
           Essential: true
           Image: !FindInMap [Constants, Images, Xterm]
