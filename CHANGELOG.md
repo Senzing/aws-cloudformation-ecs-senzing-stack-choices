@@ -8,8 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+## [1.2.6] - 2022-03-10
+
+### Changed in 1.2.6
+
 - removed Jupyter
 - removed flowlogs
+- updated image versions
 
 ## [1.2.5] - 2022-02-01
 
