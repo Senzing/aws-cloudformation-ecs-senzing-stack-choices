@@ -14,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed in 1.2.8
 
-
 - update images to 3.0.0
 - update Senzing version to 3.0.0
 - migrated from yum to apt installer
