@@ -249,7 +249,7 @@ Parameters:
     Type: String
 
   SenzingInputUrl:
-    Default: https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set.json
+    Default: https://s3.amazonaws.com/public-read-access/TestDataSets/SenzingTruthSet/truth-set-3.0.0.jsonl
     Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#senzinginputurl"
     Type: String
 
