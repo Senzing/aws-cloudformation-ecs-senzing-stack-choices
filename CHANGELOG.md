@@ -9,6 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 -
+
+## [1.2.8] - 2022-05-11
+
+### Changed in 1.2.8
+
+- update images to 3.0.0
+- update Senzing version to 3.0.0
+- migrated from yum to apt installer
+- remove "-withinfo" for loader and redoer
+- update dashboards
+- update to 3.0.0 paths
+- add new truth set
+- create new truth set data sources
+- update certificate python to 3.8 and add `-1.0.2` to the filename `self-signed-certificate.zip`
+- redoer queue parameters: ApplicationAutoScalingScalingPolicyRedoerLoader targetValue = 20
+- add private API server URL
+
 ## [1.2.6] - 2022-03-10
 
 ### Changed in 1.2.6
