@@ -40,7 +40,7 @@ that has been initialized by deploying the
                Example:  `senzing-db`
         1. In **Security**
             1. Provide the email address for the administrative user.  Example: `me@example.com`
-            1. Provide the permitted IP address block allowed to connect using CIDR notation.  Note: to open the installation to any IP address use: `0.0.0.0/0`
+            1. Provide the permitted IP address block allowed to connect using CIDR notation.  Note: to open the installation to any IP address use: `0.0.0.0/0`.  For more on CIDR, see [Classless Inter-Domain Routing](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
         1. In **Optional: Initial data load**
             1. If loading data during deployment is desired, choose "Yes" for *"Optional: Would you like to have an initial set of data imported?"*
             1. If "Yes" is chosen, the other field specify what data is to be loaded.
