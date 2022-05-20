@@ -26,24 +26,29 @@ that has been initialized by deploying the
 1. In the "Specify template" area choose the "Upload a template file" radio button.
 1. Select the "Choose file" button and choose the AWS Cloudformation template that was downloaded previously.1. At lower-right, click on "Next" button.
 1. In **Specify stack details**
+    1. In **Stack name**
+        1. Choose a stack name that is unique to you and less than 17 characters.
     1. In **Parameters**
-        1. In **Security responsibility**
-            1. Understand the nature of the security in the deployment.
-            1. Once understood, enter "I AGREE".
         1. In **Senzing installation**
-            1. Accept the End User License Agreement
-        1. In **Security**
-            1. Enter your email address.  Example: `me@example.com`
+            1. Accept the End User License Agreement.
+            1. Optionally, choose a version of Senzing to install.
+            1. Optionally, add a license string.
         1. In **Identify existing resources**
             1. Enter the stack name of the previously deployed
                [aws-cloudformation-database-cluster](https://github.com/Senzing/aws-cloudformation-database-cluster)
                Cloudformation stack
                Example:  `senzing-db`
+        1. In **Security**
+            1. Provide the email address for the administrative user.  Example: `me@example.com`
+            1. Provide the permitted IP address block allowed to connect using CIDR notation.  Note: to open the installation to any IP address use: `0.0.0.0/0`.  For more on CIDR, see [Classless Inter-Domain Routing](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
         1. In **Optional: Initial data load**
             1. If loading data during deployment is desired, choose "Yes" for *"Optional: Would you like to have an initial set of data imported?"*
             1. If "Yes" is chosen, the other field specify what data is to be loaded.
         1. In **Optional: Service**
             1. Individual services can be selected.
+        1. In **Security responsibility**
+            1. Understand the nature of the security in the deployment.
+            1. Once understood, enter "I AGREE".
     1. At lower-right, click "Next" button.
 1. In **Configure stack options**
     1. At lower-right, click "Next" button.
