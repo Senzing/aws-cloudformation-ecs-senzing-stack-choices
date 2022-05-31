@@ -360,18 +360,6 @@ Technical information on AWS Cloudformation parameters can be seen at
    [ "Yes" | "No" ]
 1. **Default:** Yes
 
-### RunVpcFlowLogs
-
-1. **Synopsis:**
-   Optionally, capture information about the IP traffic going to and from network interfaces in your VPC.
-1. **Required:** Yes
-1. **Type:** Boolean
-1. **Allowed values:**
-   [ "Yes" | "No" ]
-1. **Default:** No
-1. **References:**
-    1. [VPC Flow Logs](https://docs.aws.amazon.com/vpc/latest/userguide/flow-logs.html).
-
 ### RunWebApp
 
 1. **Synopsis:**

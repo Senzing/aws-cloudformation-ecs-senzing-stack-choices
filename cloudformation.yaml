@@ -228,7 +228,7 @@ Parameters:
       - "No"
       - "Yes"
     Default: "No"
-    Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#xterm"
+    Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runxterm"
     Type: String
 
   SecurityResponsibility:
