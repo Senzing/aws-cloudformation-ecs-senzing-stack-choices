@@ -228,7 +228,7 @@ Parameters:
       - "No"
       - "Yes"
     Default: "No"
-    Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#xterm"
+    Description: "Help: https://hub.senzing.com/aws-cloudformation-ecs-senzing-stack-choices/#runxterm"
     Type: String
 
   SecurityResponsibility:
@@ -2733,7 +2733,7 @@ Resources:
         - Order: 1
           RedirectConfig:
             Host: hub.senzing.com
-            Path: /aws-cloudformation-ecs-senzing-stack-basic/
+            Path: /aws-cloudformation-ecs-senzing-stack-choices/
             Port: "443"
             Protocol: HTTPS
             StatusCode: HTTP_301
