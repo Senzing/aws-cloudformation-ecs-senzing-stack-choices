@@ -14,6 +14,9 @@ that has been initialized by deploying the
    With appropriate permissions, the
    [AWS Cost Explorer](https://aws.amazon.com/aws-cost-management/aws-cost-explorer/)
    can help evaluate costs.
+1. :warning: **Warning:**
+   This Cloudformation deployment only runs in
+   [supported AWS Regions](https://github.com/Senzing/knowledge-base/blob/main/lists/aws-supported-regions.md).
 1. Download the appropriate [AWS Cloudformation template example](https://raw.githubusercontent.com/Senzing/aws-cloudformation-ecs-senzing-stack-choices/main/cloudformation.yaml) from this repository to your local device.  Example:
     ```
     curl -X GET \
