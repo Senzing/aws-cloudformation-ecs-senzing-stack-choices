@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+-
+
+## [1.2.10] - 2022-07-29
+
+### Changed in 1.2.10
+
 - updated to support different engine config depending on database config
 
 ## [1.2.9] - 2022-06-10
